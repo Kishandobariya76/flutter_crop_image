@@ -8,6 +8,43 @@ A production-ready, highly extensible Flutter image cropping package. Built with
 
 ---
 
+## 📸 Showcase & Preview
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/02_basic_cropper.png" width="220" alt="Turnkey Cropper" />
+      <br />
+      <b>Turnkey Cropper</b>
+      <br />
+      <sub>Toolbar & Composition Grid</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/04_circular_avatar.png" width="220" alt="Avatar Crop" />
+      <br />
+      <b>Circular Avatar</b>
+      <br />
+      <sub>Profile Cutout Mask</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/06_landscape_16_9.png" width="220" alt="16:9 Landscape" />
+      <br />
+      <b>16:9 Landscape</b>
+      <br />
+      <sub>Widescreen Preset</sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/07_nord_theme.png" width="220" alt="Nord Theme" />
+      <br />
+      <b>Nord Theme</b>
+      <br />
+      <sub>Custom Palette Styling</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 🌟 Key Features
 
 * **Decoupled Architecture**: The core crop engine is pure Dart/Flutter, completely independent of `Material`, `Cupertino`, `Scaffold`, or any third-party state manager.
@@ -80,6 +117,21 @@ void openImageCropper(BuildContext context, ImageProvider imageProvider) {
 }
 ```
 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/02_basic_cropper.png" width="280" alt="Turnkey Cropper View" />
+      <br />
+      <b>Interactive Crop Viewport</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/05_cropped_result.png" width="280" alt="Cropped Result Dialog" />
+      <br />
+      <b>Exported Result & Metadata</b>
+    </td>
+  </tr>
+</table>
+
 ---
 
 ### 2. Headless In-App Widget (`FlutterCropImage`)
@@ -132,6 +184,21 @@ class _MyCustomEditorScreenState extends State<MyCustomEditorScreen> {
   }
 }
 ```
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/09_headless_engine.png" width="280" alt="Headless Cropper" />
+      <br />
+      <b>Headless Engine Viewport</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/08_custom_controls.png" width="280" alt="Custom Controls" />
+      <br />
+      <b>Custom Developer Controls</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -219,6 +286,12 @@ ListenableBuilder(
 );
 ```
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/10_rotate_and_zoom.png" width="280" alt="Programmatic Rotation and Fine Zoom" />
+  <br />
+  <b>90° Hardware Matrix Rotation & Continuous Zoom Slider (up to 5.0x)</b>
+</p>
+
 ---
 
 ## 📐 Aspect Ratios
@@ -241,6 +314,21 @@ final cinema = CropAspectRatio.custom(21, 9, label: '21:9 Cinema');
 final floatRatio = CropAspectRatio.ratio(2.35, label: 'Anamorphic');
 ```
 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/03_aspect_ratios.png" width="280" alt="Aspect Ratio Selection" />
+      <br />
+      <b>Dynamic Aspect Ratio Selector</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/06_landscape_16_9.png" width="280" alt="16:9 Landscape Preset" />
+      <br />
+      <b>Locked 16:9 Landscape Mode</b>
+    </td>
+  </tr>
+</table>
+
 ---
 
 ## ⭕ Geometric Crop Shapes
@@ -262,6 +350,21 @@ CropperConfiguration(
   ),
 )
 ```
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/04_circular_avatar.png" width="280" alt="Circular Avatar Mask" />
+      <br />
+      <b>Circular Avatar Mask Preview</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/04b_avatar_result.png" width="280" alt="Circular Alpha Output" />
+      <br />
+      <b>Transparent Alpha PNG Output</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -330,6 +433,12 @@ FlutterCropImageView(
 * `CropperTheme.light` (Clean light mode)
 * `CropperTheme.cupertinoDark` (iOS Photos app style)
 * `CropperTheme.nord` (Arctic Nord palette)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/07_nord_theme.png" width="280" alt="Nord Theme Styling" />
+  <br />
+  <b>Custom Nord Theme Preset (Frost Polar Palette & Themed Grid)</b>
+</p>
 
 ---
 
@@ -454,6 +563,27 @@ class _CropperDemoScreenState extends State<CropperDemoScreen> {
   }
 }
 ```
+
+---
+
+## 📱 Interactive Example App
+
+The included [`example/`](example/) project showcases all 6 cropper modes and workflows. It generates a high-resolution 1600×1200 vector canvas in memory for testing offline without external assets or network dependencies:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/01_example_home.png" width="300" alt="Example Showcase App" />
+  <br />
+  <b>Interactive Example Suite on Physical Device</b>
+</p>
+
+| Mode | Highlight |
+| :--- | :--- |
+| **1. Basic Turnkey Cropper** | Full navigation bar, aspect ratios, zoom slider, rotate, and flip. |
+| **2. Circular Profile Crop** | 1:1 circular mask for avatars with transparent alpha channel cutout. |
+| **3. 16:9 Landscape Thumbnail** | Fixed widescreen ratio with Rule of Thirds alignment guides. |
+| **4. Custom Nord Theme** | Polar theme palette override for toolbar, borders, handles, and grid. |
+| **5. Custom Developer Controls** | Completely bespoke floating buttons and custom action rows. |
+| **6. Headless Crop Engine** | Bare `FlutterCropImage` embedded directly inside custom screens. |
 
 ---
 
