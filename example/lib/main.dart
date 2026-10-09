@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_crop_image/flutter_crop_image.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const CropperExampleApp());
@@ -339,6 +340,170 @@ class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
     _documentImageBytes = byteData!.buffer.asUint8List();
   }
 
+  Future<void> _pickAndCropDocument(
+    BuildContext context, {
+    required ImageSource source,
+  }) async {
+    try {
+      final picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: source);
+      if (file == null || !context.mounted) return;
+
+      final Uint8List bytes = await file.readAsBytes();
+      if (!context.mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => AutoDocumentCropScreen(
+            initialImageBytes: bytes,
+            isFromGallery: true,
+            onCropped: (result) => _showResult(context, result),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
+
+  void _showDocumentSourceSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E2D),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Select Document for Auto-Crop',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Instant edge auto-detection for ID cards, receipts & documents',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white60,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0x263B82F6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.photo_library_outlined,
+                        color: Color(0xFF60A5FA)),
+                  ),
+                  title: const Text('Pick from Gallery',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                      'Choose your own Aadhar, PAN, or document photo',
+                      style: TextStyle(color: Colors.white60, fontSize: 12)),
+                  trailing: const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.white38),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickAndCropDocument(context, source: ImageSource.gallery);
+                  },
+                ),
+                const Divider(color: Colors.white12),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0x2610B981),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.camera_alt_outlined,
+                        color: Color(0xFF34D399)),
+                  ),
+                  title: const Text('Capture with Camera',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                      'Take a live photo of your ID card or document',
+                      style: TextStyle(color: Colors.white60, fontSize: 12)),
+                  trailing: const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.white38),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickAndCropDocument(context, source: ImageSource.camera);
+                  },
+                ),
+                const Divider(color: Colors.white12),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0x26F59E0B),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.badge_outlined,
+                        color: Color(0xFFFBBF24)),
+                  ),
+                  title: const Text('Simulated Aadhar Card (Sample)',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                      'Built-in offline sample card on contrasting desk surface',
+                      style: TextStyle(color: Colors.white60, fontSize: 12)),
+                  trailing: const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.white38),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => AutoDocumentCropScreen(
+                          initialImageBytes:
+                              _documentImageBytes ?? _demoImageBytes!,
+                          isFromGallery: false,
+                          onCropped: (result) => _showResult(context, result),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showResult(BuildContext context, CropResult result) {
     showDialog<void>(
       context: context,
@@ -569,22 +734,9 @@ class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
                   _DemoTile(
                     title: '7. Auto Document Crop (Aadhar / ID Card)',
                     subtitle:
-                        'Simulated Aadhar card with instant edge auto-detection & auto-snapping.',
+                        'Auto edge detection for gallery images, camera capture, or simulated Aadhar card.',
                     icon: Icons.document_scanner,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => AdvancedCropperView(
-                          image: MemoryImage(
-                              _documentImageBytes ?? _demoImageBytes!),
-                          title: 'Auto Crop Document',
-                          configuration: CropperConfiguration.idCard,
-                          onCropped: (result) {
-                            Navigator.of(context).pop();
-                            _showResult(context, result);
-                          },
-                        ),
-                      ),
-                    ),
+                    onTap: () => _showDocumentSourceSheet(context),
                   ),
                 ],
               ),
@@ -832,3 +984,155 @@ class _HeadlessScreenState extends State<HeadlessScreen> {
     );
   }
 }
+
+/// Dedicated Auto Document & ID Card Cropping Screen with built-in Gallery & Camera picker.
+class AutoDocumentCropScreen extends StatefulWidget {
+  const AutoDocumentCropScreen({
+    super.key,
+    required this.initialImageBytes,
+    this.isFromGallery = false,
+    required this.onCropped,
+  });
+
+  final Uint8List initialImageBytes;
+  final bool isFromGallery;
+  final ValueChanged<CropResult> onCropped;
+
+  @override
+  State<AutoDocumentCropScreen> createState() => _AutoDocumentCropScreenState();
+}
+
+class _AutoDocumentCropScreenState extends State<AutoDocumentCropScreen> {
+  late Uint8List _imageBytes;
+  int _imageKey = 0;
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageBytes = widget.initialImageBytes;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: source);
+      if (file == null || !mounted) return;
+      final bytes = await file.readAsBytes();
+      setState(() {
+        _imageBytes = bytes;
+        _imageKey++;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0F14),
+      body: SafeArea(
+        child: AdvancedCropperView(
+          key: ValueKey(_imageKey),
+          image: MemoryImage(_imageBytes),
+          title: widget.isFromGallery
+              ? 'Gallery Document'
+              : 'Auto Crop Document',
+          configuration: CropperConfiguration.idCard,
+          onCropped: (result) {
+            Navigator.of(context).pop();
+            widget.onCropped(result);
+          },
+          topBarBuilder: (context, controller) {
+            return Container(
+              color: const Color(0xFF181824),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white70),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Back',
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      widget.isFromGallery
+                          ? 'Gallery Document'
+                          : 'Auto Crop Document',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.photo_library_outlined,
+                        color: Color(0xFF60A5FA)),
+                    tooltip: 'Pick from Gallery',
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt_outlined,
+                        color: Color(0xFF34D399)),
+                    tooltip: 'Capture Camera',
+                    onPressed: () => _pickImage(ImageSource.camera),
+                  ),
+                  _isProcessing
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12.0),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : TextButton(
+                          onPressed: () async {
+                            if (_isProcessing) return;
+                            setState(() => _isProcessing = true);
+                            try {
+                              final res = await controller.crop();
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                                widget.onCropped(res);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Crop failed: $e')),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isProcessing = false);
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'Done',
+                            style: TextStyle(
+                              color: Color(0xFF3B82F6),
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+

@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   flutter_crop_image:
     path: ../
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
