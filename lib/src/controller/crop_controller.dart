@@ -6,6 +6,7 @@ import '../configuration/crop_aspect_ratio.dart';
 import '../configuration/crop_export_configuration.dart';
 import '../configuration/crop_shape.dart';
 import '../configuration/cropper_configuration.dart';
+import '../detection/crop_auto_detector.dart';
 import '../exceptions/crop_exception.dart';
 import '../models/crop_image_format.dart';
 import '../models/crop_rect.dart';
@@ -40,6 +41,13 @@ abstract class CropEngineDelegate {
 
   /// Recalculates and clamps crop frame to active aspect ratio.
   void updateCropWindow(Rect newRect);
+
+  /// Animates crop window bounds smoothly.
+  Future<void> animateCropWindow(
+    Rect targetRect, {
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeOutCubic,
+  });
 }
 
 /// Primary controller for manipulating image cropping transformations and exporting results.
@@ -306,6 +314,81 @@ class CropController extends ChangeNotifier {
     if (_delegate != null) {
       _delegate!.updateCropWindow(newCropRect);
     }
+  }
+
+  // ===========================================================================
+  // DOCUMENT AUTO-DETECTION & SNAPPING
+  // ===========================================================================
+
+  /// Most recently detected document, if auto-detection has been executed.
+  DetectedDocument? get detectedDocument => _state.detectedDocument;
+
+  /// Runs document boundary detection on the active image using [detector] or [CropperConfiguration.detector].
+  ///
+  /// Updates [CropState.detectedDocument] and returns the result, or `null` if no document was detected.
+  Future<DetectedDocument?> autoDetectDocument({
+    CropAutoDetector? detector,
+  }) async {
+    final delegate = _delegate;
+    if (delegate == null || !isReady || delegate.activeImage == null) {
+      return null;
+    }
+
+    final activeDetector = detector ?? _configuration.detector;
+    final DetectedDocument? result =
+        await activeDetector.detect(delegate.activeImage!);
+
+    if (result != null) {
+      _state = _state.copyWith(detectedDocument: result);
+      notifyListeners();
+    }
+    return result;
+  }
+
+  /// Detects document boundaries and smoothly snaps the crop frame to encircle the document.
+  ///
+  /// If [updateAspectRatio] is true and the document matches a known ratio (e.g. ID Card / Aadhar),
+  /// the active aspect ratio constraint is updated automatically.
+  ///
+  /// Returns `true` if a document was recognized and snapped, or `false` otherwise.
+  Future<bool> autoDetectAndSnap({
+    Duration duration = const Duration(milliseconds: 350),
+    Curve curve = Curves.easeOutCubic,
+    CropAutoDetector? detector,
+    bool updateAspectRatio = true,
+  }) async {
+    final delegate = _delegate;
+    if (delegate == null || !isReady || delegate.activeImage == null) {
+      return false;
+    }
+
+    final DetectedDocument? doc =
+        await autoDetectDocument(detector: detector);
+    if (doc == null) return false;
+
+    final Rect fitted = delegate.fittedImageRect;
+    final double left = fitted.left + doc.normalizedRect.left * fitted.width;
+    final double top = fitted.top + doc.normalizedRect.top * fitted.height;
+    final double width = doc.normalizedRect.width * fitted.width;
+    final double height = doc.normalizedRect.height * fitted.height;
+
+    final Rect targetRect = Rect.fromLTWH(left, top, width, height);
+
+    if (updateAspectRatio && doc.matchedRatio != null) {
+      setAspectRatio(doc.matchedRatio!);
+    }
+
+    if (duration > Duration.zero) {
+      await delegate.animateCropWindow(
+        targetRect,
+        duration: duration,
+        curve: curve,
+      );
+    } else {
+      delegate.updateCropWindow(targetRect);
+    }
+
+    return true;
   }
 
   // ===========================================================================

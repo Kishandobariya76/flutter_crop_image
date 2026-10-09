@@ -43,6 +43,7 @@ class ExampleHomeScreen extends StatefulWidget {
 
 class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
   Uint8List? _demoImageBytes;
+  Uint8List? _documentImageBytes;
   bool _isGenerating = true;
 
   @override
@@ -50,9 +51,23 @@ class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
     super.initState();
     if (widget.initialImageBytes != null) {
       _demoImageBytes = widget.initialImageBytes;
-      _isGenerating = false;
+      _generateAadharDocumentImage().then((_) {
+        if (mounted) setState(() => _isGenerating = false);
+      });
     } else {
-      _generateDemoImage();
+      _generateAllDemoImages();
+    }
+  }
+
+  Future<void> _generateAllDemoImages() async {
+    await Future.wait([
+      _generateDemoImage(),
+      _generateAadharDocumentImage(),
+    ]);
+    if (mounted) {
+      setState(() {
+        _isGenerating = false;
+      });
     }
   }
 
@@ -134,11 +149,194 @@ class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
 
     final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
     img.dispose();
+    _demoImageBytes = byteData!.buffer.asUint8List();
+  }
 
-    setState(() {
-      _demoImageBytes = byteData!.buffer.asUint8List();
-      _isGenerating = false;
-    });
+  /// Generates a photorealistic 1600x1200 image of an Aadhar / ID card placed on a contrasting desk background.
+  Future<void> _generateAadharDocumentImage() async {
+    const int width = 1600;
+    const int height = 1200;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    // 1. Dark office desk surface background
+    final deskPaint = Paint()..color = const Color(0xFF1E212D);
+    canvas.drawRect(
+      const Rect.fromLTWH(0, 0, 1600.0, 1200.0),
+      deskPaint,
+    );
+
+    // Subtle table grain lines
+    final grainPaint = Paint()
+      ..color = const Color(0x15FFFFFF)
+      ..strokeWidth = 3.0;
+    for (double y = 0; y < height; y += 80) {
+      canvas.drawLine(Offset(0, y), Offset(width.toDouble(), y), grainPaint);
+    }
+
+    // 2. ID Card / Aadhar Card bounding box (ISO/IEC 7810 ID-1 ratio = 1.586)
+    // Card dimensions: 1000 x 630 px, centered at (300, 285)
+    const cardRect = Rect.fromLTWH(300, 285, 1000, 630);
+    final cardRRect =
+        RRect.fromRectAndRadius(cardRect, const Radius.circular(24.0));
+
+    // Card drop shadow
+    final shadowPaint = Paint()
+      ..color = const Color(0x88000000)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28.0);
+    canvas.drawRRect(cardRRect.shift(const Offset(0, 16)), shadowPaint);
+
+    // Card base (Crisp white / pearl card surface)
+    final cardBgPaint = Paint()..color = const Color(0xFFF9FAFB);
+    canvas.drawRRect(cardRRect, cardBgPaint);
+
+    // Clip to card bounds for inner contents
+    canvas.save();
+    canvas.clipRRect(cardRRect);
+
+    // 3. Official Tricolor Top Header Band
+    final headerSaffron = Paint()..color = const Color(0xFFFF9933);
+    final headerWhite = Paint()..color = Colors.white;
+    final headerGreen = Paint()..color = const Color(0xFF138808);
+
+    canvas.drawRect(const Rect.fromLTWH(300, 285, 1000, 20), headerSaffron);
+    canvas.drawRect(const Rect.fromLTWH(300, 305, 1000, 20), headerWhite);
+    canvas.drawRect(const Rect.fromLTWH(300, 325, 1000, 20), headerGreen);
+
+    // Emblem / Logo placeholder
+    final emblemPaint = Paint()
+      ..color = const Color(0xFF000088)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    canvas.drawCircle(const Offset(355, 385), 24, emblemPaint);
+
+    // Government / Header Title
+    final titlePainter = TextPainter(
+      text: const TextSpan(
+        text: 'GOVERNMENT OF INDIA\nUNIQUE IDENTIFICATION AUTHORITY',
+        style: TextStyle(
+          color: Color(0xFF0F172A),
+          fontSize: 22.0,
+          fontWeight: FontWeight.bold,
+          height: 1.2,
+          letterSpacing: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: 700);
+    titlePainter.paint(canvas, const Offset(395, 370));
+
+    // 4. Portrait photo box on left
+    const photoRect = Rect.fromLTWH(340, 460, 190, 240);
+    final photoBorderPaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    final photoBgPaint = Paint()..color = const Color(0xFFE2E8F0);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(photoRect, const Radius.circular(12)),
+        photoBgPaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(photoRect, const Radius.circular(12)),
+        photoBorderPaint);
+
+    // Head / silhouette icon
+    final silhouettePaint = Paint()..color = const Color(0xFF94A3B8);
+    canvas.drawCircle(const Offset(435, 535), 45, silhouettePaint);
+    canvas.drawOval(const Rect.fromLTWH(370, 595, 130, 90), silhouettePaint);
+
+    // 5. Personal Details (Name, DOB, Gender)
+    final infoPainter = TextPainter(
+      text: const TextSpan(
+        children: [
+          TextSpan(
+            text: 'Name: Kishan Dobariya\n',
+            style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A)),
+          ),
+          TextSpan(
+            text: 'DOB: 15/08/1995\nGender: Male\n',
+            style: TextStyle(
+                fontSize: 22, height: 1.5, color: Color(0xFF334155)),
+          ),
+          TextSpan(
+            text: 'Mobile: +91 90232 56218',
+            style: TextStyle(fontSize: 20, color: Color(0xFF64748B)),
+          ),
+        ],
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: 500);
+    infoPainter.paint(canvas, const Offset(570, 470));
+
+    // 6. Large 12-Digit Aadhar Card Number
+    final aadharNumPainter = TextPainter(
+      text: const TextSpan(
+        text: '9876   5432   1098',
+        style: TextStyle(
+          color: Color(0xFFB91C1C),
+          fontSize: 38.0,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 4.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    aadharNumPainter.paint(canvas, const Offset(570, 630));
+
+    // 7. QR Code square box at bottom right
+    const qrRect = Rect.fromLTWH(1100, 680, 160, 160);
+    final qrPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRect(qrRect, Paint()..color = const Color(0xFFF1F5F9));
+    canvas.drawRect(
+        qrRect,
+        Paint()
+          ..color = const Color(0xFF94A3B8)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2);
+
+    for (int qy = 0; qy < 8; qy++) {
+      for (int qx = 0; qx < 8; qx++) {
+        if ((qx + qy) % 2 == 0 || (qx == 0 || qx == 7 || qy == 0 || qy == 7)) {
+          canvas.drawRect(
+            Rect.fromLTWH(1100 + qx * 20.0 + 3, 680 + qy * 20.0 + 3, 14, 14),
+            qrPaint,
+          );
+        }
+      }
+    }
+
+    // Official verification ribbon at bottom
+    final bottomBarPaint = Paint()..color = const Color(0xFFE2E8F0);
+    canvas.drawRect(const Rect.fromLTWH(300, 875, 1000, 40), bottomBarPaint);
+
+    final footerPainter = TextPainter(
+      text: const TextSpan(
+        text:
+            'UNIQUE IDENTIFICATION AUTHORITY OF INDIA  •  MERA AADHAAR, MERI PEHCHAAN',
+        style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF475569),
+            letterSpacing: 1.0),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    footerPainter.paint(canvas, const Offset(340, 887));
+
+    canvas.restore();
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width, height);
+    picture.dispose();
+
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    img.dispose();
+
+    _documentImageBytes = byteData!.buffer.asUint8List();
   }
 
   void _showResult(BuildContext context, CropResult result) {
@@ -363,6 +561,27 @@ class _ExampleHomeScreenState extends State<ExampleHomeScreen> {
                         builder: (_) => HeadlessScreen(
                           imageBytes: _demoImageBytes!,
                           onCropped: (result) => _showResult(context, result),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  _DemoTile(
+                    title: '7. Auto Document Crop (Aadhar / ID Card)',
+                    subtitle:
+                        'Simulated Aadhar card with instant edge auto-detection & auto-snapping.',
+                    icon: Icons.document_scanner,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => AdvancedCropperView(
+                          image: MemoryImage(
+                              _documentImageBytes ?? _demoImageBytes!),
+                          title: 'Auto Crop Document',
+                          configuration: CropperConfiguration.idCard,
+                          onCropped: (result) {
+                            Navigator.of(context).pop();
+                            _showResult(context, result);
+                          },
                         ),
                       ),
                     ),

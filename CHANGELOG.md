@@ -1,3 +1,13 @@
+## 0.2.0
+
+* Added **Automatic Document & ID Card Detection** (`CropAutoDetector`, `NativeDocumentDetector`).
+* Pure-Dart hardware luminance gradient edge detector with zero external C++/ML dependencies.
+* Added `CropperConfiguration.idCard` and `CropperConfiguration.documentScanner` presets.
+* Added standard document aspect ratios: `CropAspectRatio.idCard` (ISO/IEC 7810 ID-1 standard ~1.586 for Aadhar/PAN cards), `CropAspectRatio.a4` (~1.414), and `CropAspectRatio.passport` (~0.778).
+* Added `CropController.autoDetectDocument()` and `CropController.autoDetectAndSnap()` with smooth easing animations.
+* Added Auto-Detect document button to `DefaultCropperControls` toolbar with scrollable overflow prevention.
+* Added simulated Aadhar card test and demo tile to the example application.
+
 ## 0.1.0
 
 * Initial release of `flutter_crop_image`.

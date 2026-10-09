@@ -1,6 +1,6 @@
 name: flutter_crop_image
 description: A production-ready, highly extensible Flutter image cropper package with headless engine support, customizable overlays, themes, gestures, shapes, and GPU-accelerated export.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/Kishandobariya76/flutter_crop_image
 repository: https://github.com/Kishandobariya76/flutter_crop_image
 issue_tracker: https://github.com/Kishandobariya76/flutter_crop_image/issues
@@ -10,7 +10,7 @@ topics:
   - cropper
   - crop-image
   - image-cropper
-  - photo-editor
+  - document-scanner
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

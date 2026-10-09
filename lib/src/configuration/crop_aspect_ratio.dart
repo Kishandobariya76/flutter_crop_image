@@ -90,6 +90,28 @@ class CropAspectRatio {
     label: '2:3',
   );
 
+  /// Standard ISO/IEC 7810 ID-1 card ratio (85.60 mm x 53.98 mm ≈ 1.586).
+  /// Used for Aadhar card, PAN card, Driver's License, Credit/Debit cards.
+  static const CropAspectRatio idCard = CropAspectRatio(
+    width: 85.60,
+    height: 53.98,
+    label: 'ID Card (Aadhar)',
+  );
+
+  /// Standard ISO 216 A4 document ratio (297 mm x 210 mm ≈ 1.414).
+  static const CropAspectRatio a4 = CropAspectRatio(
+    width: 297.0,
+    height: 210.0,
+    label: 'A4 Document',
+  );
+
+  /// Standard passport photo ratio (35 mm x 45 mm ≈ 0.778 portrait).
+  static const CropAspectRatio passport = CropAspectRatio(
+    width: 35.0,
+    height: 45.0,
+    label: 'Passport',
+  );
+
   /// Default list of aspect ratio presets.
   static const List<CropAspectRatio> presets = [
     free,
@@ -100,6 +122,8 @@ class CropAspectRatio {
     ratio9x16,
     ratio3x2,
     ratio2x3,
+    idCard,
+    a4,
   ];
 
   /// Relative width component.

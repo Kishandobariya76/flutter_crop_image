@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../configuration/crop_aspect_ratio.dart';
 import '../configuration/crop_shape.dart';
+import '../detection/crop_auto_detector.dart';
 import 'crop_rect.dart';
 import 'crop_transform.dart';
 
@@ -17,6 +18,7 @@ class CropState {
     required this.shape,
     required this.imageSize,
     required this.isReady,
+    this.detectedDocument,
   });
 
   /// An uninitialized initial state.
@@ -29,6 +31,7 @@ class CropState {
     shape: CropShape.rectangle,
     imageSize: Size.zero,
     isReady: false,
+    detectedDocument: null,
   );
 
   /// Pixel coordinates of the crop frame within the container viewport.
@@ -55,6 +58,9 @@ class CropState {
   /// Whether the image has been decoded and the cropper is ready for operations.
   final bool isReady;
 
+  /// Optional detected document bounding information when auto-detection is performed.
+  final DetectedDocument? detectedDocument;
+
   /// Current zoom scale multiplier.
   double get zoom => transform.scale;
 
@@ -77,6 +83,7 @@ class CropState {
     CropShape? shape,
     Size? imageSize,
     bool? isReady,
+    DetectedDocument? detectedDocument,
   }) {
     return CropState(
       cropRect: cropRect ?? this.cropRect,
@@ -87,6 +94,7 @@ class CropState {
       shape: shape ?? this.shape,
       imageSize: imageSize ?? this.imageSize,
       isReady: isReady ?? this.isReady,
+      detectedDocument: detectedDocument ?? this.detectedDocument,
     );
   }
 
@@ -101,7 +109,8 @@ class CropState {
         other.aspectRatio == aspectRatio &&
         other.shape == shape &&
         other.imageSize == imageSize &&
-        other.isReady == isReady;
+        other.isReady == isReady &&
+        other.detectedDocument == detectedDocument;
   }
 
   @override
@@ -114,6 +123,7 @@ class CropState {
         shape,
         imageSize,
         isReady,
+        detectedDocument,
       );
 
   @override

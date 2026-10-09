@@ -20,6 +20,7 @@ class DefaultCropperControls extends StatelessWidget {
     this.showRotateButtons = true,
     this.showFlipButtons = true,
     this.showResetButton = true,
+    this.showAutoDetectButton = true,
   });
 
   /// The active crop controller.
@@ -45,6 +46,9 @@ class DefaultCropperControls extends StatelessWidget {
 
   /// Whether to display the reset button.
   final bool showResetButton;
+
+  /// Whether to display the auto-detect document scanner button.
+  final bool showAutoDetectButton;
 
   @override
   Widget build(BuildContext context) {
@@ -141,67 +145,84 @@ class DefaultCropperControls extends StatelessWidget {
               // 3. Action Buttons (Rotate, Flip, Shapes, Reset)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    if (showRotateButtons) ...[
-                      _ToolbarIconButton(
-                        icon: Icons.rotate_90_degrees_ccw,
-                        tooltip: 'Rotate Left',
-                        theme: theme,
-                        onPressed: controller.rotateLeft,
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minWidth: constraints.maxWidth),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          if (showRotateButtons) ...[
+                            _ToolbarIconButton(
+                              icon: Icons.rotate_90_degrees_ccw,
+                              tooltip: 'Rotate Left',
+                              theme: theme,
+                              onPressed: controller.rotateLeft,
+                            ),
+                            _ToolbarIconButton(
+                              icon: Icons.rotate_90_degrees_cw,
+                              tooltip: 'Rotate Right',
+                              theme: theme,
+                              onPressed: controller.rotateRight,
+                            ),
+                          ],
+                          if (showFlipButtons) ...[
+                            _ToolbarIconButton(
+                              icon: Icons.flip,
+                              tooltip: 'Flip Horizontal',
+                              theme: theme,
+                              isActive: state.isFlippedHorizontal,
+                              onPressed: controller.flipHorizontal,
+                            ),
+                            _ToolbarIconButton(
+                              icon: Icons.flip,
+                              tooltip: 'Flip Vertical',
+                              transform: Matrix4.rotationZ(
+                                  1.5708), // 90 deg visual indicator
+                              theme: theme,
+                              isActive: state.isFlippedVertical,
+                              onPressed: controller.flipVertical,
+                            ),
+                          ],
+                          if (showShapeSelector) ...[
+                            _ToolbarIconButton(
+                              icon: Icons.crop_square,
+                              tooltip: 'Rectangle Shape',
+                              theme: theme,
+                              isActive: state.shape == CropShape.rectangle,
+                              onPressed: () =>
+                                  controller.setCropShape(CropShape.rectangle),
+                            ),
+                            _ToolbarIconButton(
+                              icon: Icons.circle_outlined,
+                              tooltip: 'Circle Shape',
+                              theme: theme,
+                              isActive: state.shape == CropShape.circle,
+                              onPressed: () =>
+                                  controller.setCropShape(CropShape.circle),
+                            ),
+                          ],
+                          if (showAutoDetectButton)
+                            _ToolbarIconButton(
+                              icon: Icons.document_scanner_outlined,
+                              tooltip: 'Auto Detect Document',
+                              theme: theme,
+                              isActive: state.detectedDocument != null,
+                              onPressed: () => controller.autoDetectAndSnap(),
+                            ),
+                          if (showResetButton)
+                            _ToolbarIconButton(
+                              icon: Icons.restart_alt,
+                              tooltip: 'Reset Transformations',
+                              theme: theme,
+                              onPressed: controller.reset,
+                            ),
+                        ],
                       ),
-                      _ToolbarIconButton(
-                        icon: Icons.rotate_90_degrees_cw,
-                        tooltip: 'Rotate Right',
-                        theme: theme,
-                        onPressed: controller.rotateRight,
-                      ),
-                    ],
-                    if (showFlipButtons) ...[
-                      _ToolbarIconButton(
-                        icon: Icons.flip,
-                        tooltip: 'Flip Horizontal',
-                        theme: theme,
-                        isActive: state.isFlippedHorizontal,
-                        onPressed: controller.flipHorizontal,
-                      ),
-                      _ToolbarIconButton(
-                        icon: Icons.flip,
-                        tooltip: 'Flip Vertical',
-                        transform: Matrix4.rotationZ(
-                            1.5708), // 90 deg visual indicator
-                        theme: theme,
-                        isActive: state.isFlippedVertical,
-                        onPressed: controller.flipVertical,
-                      ),
-                    ],
-                    if (showShapeSelector) ...[
-                      _ToolbarIconButton(
-                        icon: Icons.crop_square,
-                        tooltip: 'Rectangle Shape',
-                        theme: theme,
-                        isActive: state.shape == CropShape.rectangle,
-                        onPressed: () =>
-                            controller.setCropShape(CropShape.rectangle),
-                      ),
-                      _ToolbarIconButton(
-                        icon: Icons.circle_outlined,
-                        tooltip: 'Circle Shape',
-                        theme: theme,
-                        isActive: state.shape == CropShape.circle,
-                        onPressed: () =>
-                            controller.setCropShape(CropShape.circle),
-                      ),
-                    ],
-                    if (showResetButton)
-                      _ToolbarIconButton(
-                        icon: Icons.restart_alt,
-                        tooltip: 'Reset Transformations',
-                        theme: theme,
-                        onPressed: controller.reset,
-                      ),
-                  ],
+                    ),
+                  ),
                 ),
               ),
             ],

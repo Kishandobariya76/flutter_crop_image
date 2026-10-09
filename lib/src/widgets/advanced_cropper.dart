@@ -203,6 +203,7 @@ class _AdvancedCropperState extends State<AdvancedCropper>
   Size _viewportSize = Size.zero;
   Rect _fittedImageRect = Rect.zero;
   Rect _cropRect = Rect.zero;
+  bool _hasAutoDetected = false;
 
   // Gesture state tracking
   Offset _initialFocalPoint = Offset.zero;
@@ -303,6 +304,7 @@ class _AdvancedCropperState extends State<AdvancedCropper>
   // ===========================================================================
 
   void _resolveImage() {
+    _hasAutoDetected = false;
     setState(() {
       _isLoading = true;
       _imageError = null;
@@ -405,6 +407,20 @@ class _AdvancedCropperState extends State<AdvancedCropper>
     }
 
     _updateEngineState();
+    _triggerAutoDetectIfNeeded();
+  }
+
+  void _triggerAutoDetectIfNeeded() {
+    if (widget.configuration.autoDetectDocument &&
+        !_hasAutoDetected &&
+        _decodedImage != null) {
+      _hasAutoDetected = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.autoDetectAndSnap();
+        }
+      });
+    }
   }
 
   void _updateEngineState() {
@@ -635,6 +651,37 @@ class _AdvancedCropperState extends State<AdvancedCropper>
       _cropRect = newRect;
     });
     _updateEngineState();
+  }
+
+  @override
+  Future<void> animateCropWindow(
+    Rect targetRect, {
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeOutCubic,
+  }) {
+    final completer = Completer<void>();
+    _animController.duration = duration;
+    final Rect beginRect = _cropRect;
+    final RectTween tween = RectTween(begin: beginRect, end: targetRect);
+    final CurvedAnimation curved =
+        CurvedAnimation(parent: _animController, curve: curve);
+
+    void onTick() {
+      final Rect? current = tween.evaluate(curved);
+      if (current != null) {
+        setState(() {
+          _cropRect = current;
+        });
+        _updateEngineState();
+      }
+    }
+
+    _animController.addListener(onTick);
+    _animController.forward(from: 0.0).whenComplete(() {
+      _animController.removeListener(onTick);
+      completer.complete();
+    });
+    return completer.future;
   }
 
   // ===========================================================================

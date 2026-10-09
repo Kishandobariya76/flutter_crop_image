@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import '../detection/crop_auto_detector.dart';
+import '../detection/native_document_detector.dart';
 import 'crop_aspect_ratio.dart';
 import 'crop_export_configuration.dart';
 import 'crop_gesture_configuration.dart';
@@ -20,6 +22,8 @@ class CropperConfiguration {
     this.export = const CropExportConfiguration(),
     this.processing = const CropProcessingConfiguration(),
     this.aspectRatios = CropAspectRatio.presets,
+    this.autoDetectDocument = false,
+    this.detector = const NativeDocumentDetector(),
   });
 
   /// The active aspect ratio constraint.
@@ -45,6 +49,12 @@ class CropperConfiguration {
 
   /// Supported aspect ratio presets offered to the user in toolbars.
   final List<CropAspectRatio> aspectRatios;
+
+  /// Whether to automatically run document/card boundary detection and snap the crop frame on initial image load.
+  final bool autoDetectDocument;
+
+  /// Document detection engine to use when [autoDetectDocument] is active or when requested programmatically.
+  final CropAutoDetector detector;
 
   /// Convenient preset for circular profile pictures (1:1 aspect ratio, circle shape).
   static const CropperConfiguration profilePhoto = CropperConfiguration(
@@ -75,6 +85,28 @@ class CropperConfiguration {
     aspectRatios: [CropAspectRatio.ratio16x9],
   );
 
+  /// Convenient preset for scanning and auto-cropping general documents (A4, contracts, receipts).
+  static const CropperConfiguration documentScanner = CropperConfiguration(
+    autoDetectDocument: true,
+    aspectRatio: CropAspectRatio.free,
+    aspectRatios: [
+      CropAspectRatio.free,
+      CropAspectRatio.a4,
+      CropAspectRatio.idCard,
+      CropAspectRatio.square,
+    ],
+  );
+
+  /// Convenient preset for scanning and auto-cropping ID cards (Aadhar, PAN, Driver's License).
+  static const CropperConfiguration idCard = CropperConfiguration(
+    autoDetectDocument: true,
+    aspectRatio: CropAspectRatio.idCard,
+    aspectRatios: [
+      CropAspectRatio.idCard,
+      CropAspectRatio.free,
+    ],
+  );
+
   /// Creates a copy with modified properties.
   CropperConfiguration copyWith({
     CropAspectRatio? aspectRatio,
@@ -85,6 +117,8 @@ class CropperConfiguration {
     CropExportConfiguration? export,
     CropProcessingConfiguration? processing,
     List<CropAspectRatio>? aspectRatios,
+    bool? autoDetectDocument,
+    CropAutoDetector? detector,
   }) {
     return CropperConfiguration(
       aspectRatio: aspectRatio ?? this.aspectRatio,
@@ -95,6 +129,8 @@ class CropperConfiguration {
       export: export ?? this.export,
       processing: processing ?? this.processing,
       aspectRatios: aspectRatios ?? this.aspectRatios,
+      autoDetectDocument: autoDetectDocument ?? this.autoDetectDocument,
+      detector: detector ?? this.detector,
     );
   }
 
@@ -109,6 +145,8 @@ class CropperConfiguration {
         other.gestures == gestures &&
         other.export == export &&
         other.processing == processing &&
+        other.autoDetectDocument == autoDetectDocument &&
+        other.detector == detector &&
         listEquals(other.aspectRatios, aspectRatios);
   }
 
@@ -121,6 +159,8 @@ class CropperConfiguration {
         gestures,
         export,
         processing,
+        autoDetectDocument,
+        detector,
         Object.hashAll(aspectRatios),
       );
 }

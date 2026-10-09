@@ -58,6 +58,7 @@ A production-ready, highly extensible Flutter image cropping package. Built with
 * **Design-System Agnostic Theming**: Style every color, handle, line width, and typography through `CropperTheme` (includes Dark, Light, Cupertino, and Nord presets).
 * **Memory & OOM Defense**: Configurable raster dimension clamping (`maxProcessingDimension`) prevents GPU crashes on 4K, 8K, or multi-megapixel camera photos.
 * **Zero External Dependencies**: Runs entirely on the Flutter SDK without native bridges, NDK, or heavy C++ binaries.
+* **Auto Document & ID Card Detection**: Real-time edge boundary detection for ID cards (Aadhar, PAN, Driver's License), receipts, and documents with instant auto-snapping and ratio recognition. Includes `CropperConfiguration.idCard` and `CropperConfiguration.documentScanner` presets.
 
 ---
 
@@ -309,6 +310,11 @@ CropAspectRatio.ratio3x4;   // 3:4 Portrait
 CropAspectRatio.ratio3x2;   // 3:2 Classic Photo
 CropAspectRatio.ratio2x3;   // 2:3 Classic Portrait
 
+// Document & ID Presets
+CropAspectRatio.idCard;     // ISO/IEC 7810 ID-1 standard (~1.586) for Aadhar, PAN, Voter ID
+CropAspectRatio.a4;         // ISO 216 standard (~1.414) for printed documents
+CropAspectRatio.passport;   // 35x45mm standard (~0.778) for passport photos
+
 // Custom Ratios
 final cinema = CropAspectRatio.custom(21, 9, label: '21:9 Cinema');
 final floatRatio = CropAspectRatio.ratio(2.35, label: 'Anamorphic');
@@ -325,6 +331,55 @@ final floatRatio = CropAspectRatio.ratio(2.35, label: 'Anamorphic');
       <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/06_landscape_16_9.png" width="280" alt="16:9 Landscape Preset" />
       <br />
       <b>Locked 16:9 Landscape Mode</b>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🪪 Document & ID Card Auto-Cropping (Aadhar / PAN / Passports)
+
+Automatically analyze document boundaries and snap the crop rectangle to the edges with zero external C++/ML dependencies:
+
+```dart
+// Turnkey ID Card Scanner (Aadhar, PAN, Driving License, Student ID)
+AdvancedCropperView(
+  image: FileImage(capturedFile),
+  title: 'Scan ID Card',
+  configuration: CropperConfiguration.idCard,
+  onCropped: (result) => handleCroppedDocument(result),
+)
+
+// Or generic document scanner with auto-detection
+AdvancedCropperView(
+  image: FileImage(capturedFile),
+  title: 'Scan Document',
+  configuration: CropperConfiguration.documentScanner,
+  onCropped: (result) => handleCroppedDocument(result),
+)
+
+// Programmatic invocation via controller:
+await controller.autoDetectAndSnap(
+  duration: const Duration(milliseconds: 350),
+  curve: Curves.easeOutCubic,
+);
+```
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/11_auto_document_crop.png" width="280" alt="Auto Document Detection & Snapping" />
+      <br />
+      <b>Real-Time Auto-Detection & Snapping</b>
+      <br />
+      <sub>Automatic edge alignment around Aadhar / ID card</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://raw.githubusercontent.com/Kishandobariya76/flutter_crop_image/main/screenshots/12_document_crop_result.png" width="280" alt="Cropped Document Result" />
+      <br />
+      <b>High-Precision Cropped Result</b>
+      <br />
+      <sub>Pixel-perfect, crisp document export (PNG/JPEG)</sub>
     </td>
   </tr>
 </table>

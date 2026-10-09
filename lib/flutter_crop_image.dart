@@ -22,6 +22,8 @@ export 'src/configuration/crop_shape.dart';
 export 'src/configuration/cropper_configuration.dart';
 export 'src/configuration/cropper_theme.dart';
 export 'src/controller/crop_controller.dart';
+export 'src/detection/crop_auto_detector.dart';
+export 'src/detection/native_document_detector.dart';
 export 'src/exceptions/crop_exception.dart';
 export 'src/models/crop_image_format.dart';
 export 'src/models/crop_rect.dart';
